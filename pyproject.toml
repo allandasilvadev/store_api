@@ -23,6 +23,7 @@ addopts = [
   "--strict-config",
   "--strict-markers",
   "--ignore=docs_src",
+  "-p no:warnings"
 ]
 xfail_strict = true
 junit_family = "xunit2"
