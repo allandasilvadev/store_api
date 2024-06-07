@@ -8,6 +8,7 @@ from store.schemas.product import ProductIn, ProductOut, ProductUpdate, ProductU
 from store.core.exceptions import NotFoundException
 
 
+
 class ProductUsecase:
     def __init__(self) -> None:
         self.client: AsyncIOMotorClient = db_client.get()
@@ -32,13 +33,22 @@ class ProductUsecase:
         return [ProductOut(**item) async for item in self.collection.find()]
 
     async def update(self, id: UUID, body: ProductUpdate) -> ProductUpdateOut:
+        product = await self.collection.find_one({"id": id})
+
+        if not product:
+            raise NotFoundException(message=f"Product not found with filter: {id}")
+        
+        
         result = await self.collection.find_one_and_update(
             filter={"id": id},
-            update={"$set": body.model_dump(exclude_none=True)},
+            update={"$set": body.model_dump(exclude_none=True), "$currentDate": {"updated_at": {"$type": "date"}} },            
             return_document=pymongo.ReturnDocument.AFTER,
         )
 
-        return ProductUpdateOut(**result)
+        if result:
+            return ProductUpdateOut(**result)
+        
+        return None
 
     async def delete(self, id: UUID) -> bool:
         product = await self.collection.find_one({"id": id})
