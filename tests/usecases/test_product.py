@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 
 import pytest
-from store.core.exceptions import NotFoundException
+from store.core.exceptions import NotFoundException, NotInsertedException
 from store.schemas.product import ProductOut, ProductUpdateOut
 from store.usecases.product import product_usecase
 
@@ -13,6 +13,20 @@ async def test_usecases_create_should_return_success(product_in):
     assert isinstance(result, ProductOut)
     assert result.name == "Iphone 14 Pro Max"
 
+
+async def test_usecases_create_should_return_fail(product_in):
+    with pytest.raises(NotInsertedException) as err:
+        product_in.quantity = -1
+        await product_usecase.create(body=product_in)
+
+    assert err.value.message == "A quantidade informada nao deve ser menor que 0."
+
+async def test_usecase_create_send_empty_json(product_in):
+    with pytest.raises(NotInsertedException) as err:
+        product_in.name = ""
+        await product_usecase.create(body=product_in)
+    
+    assert err.value.message == "É necessario informar o name."
 
 async def test_usecases_get_should_return_success(product_inserted):
     result = await product_usecase.get(id=product_inserted.id)

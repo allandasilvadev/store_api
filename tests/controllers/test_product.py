@@ -23,6 +23,12 @@ async def test_controller_create_should_return_success(client, products_url):
     }
 
 
+async def test_controller_create_should_return_fail(client, products_url):
+    response = await client.post(products_url, json={})
+
+    # assert
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
 async def test_controller_get_should_return_success(
     client, products_url, product_inserted
 ):
